@@ -1,94 +1,81 @@
-import random
+USER_SCHEME = ("id", "first_name", "second_name", "email", "password")
+RECORD_SCHEME = ("id", "date", "content", "user", "title")
+users = []
+records = []
 DATABASE = []
-
-def create_record(a,b):
+def parse_record(entity, record_str, entity_scheme):
+    record_str = record_str.strip()
+    if record_str.startswith(entity):
+        record_str = record_str[len(entity):].strip()
+    record_dict = {}
+    for field in record_str.split(','):
+        key, value = field.split('=')
+        key = key.strip()
+        value = value.strip()
+        if key in entity_scheme:
+            record_dict[key] = value
+    return record_dict
+def create_record(entity, record_str, entity_scheme):
+    global DATABASE
     try:
-        if b:
-            r={}
-            for i in range(len(a)):
-                r[a[i]]=b[i]
-            DATABASE.append(r)
-            print("Успішно створено")
+        record_dict = parse_record(entity, record_str, entity_scheme)
+        DATABASE.append(record_dict)
+        print(f"{entity} створено успішно")
     except Exception as err:
-        print("Помилка при створенні:",err)
+        print(f"Помилка при створенні {entity}: {err}")
 
-def create_user(a,b):
-    try:
-        if b:
-            u={}
-            for i in range(len(a)):
-                u[a[i]]=b[i]
-            DATABASE.append(u)
-            print("Успішно створено")
-    except Exception as err:
-        print("Помилка при створенні:",err)
-
-def update_record(r):
-    try:
-        b=r.split(",")
-        for i,q in enumerate(DATABASE):
-            if q.get("i")==int(b[0]):
-                for j in range(1,len(b)):
-                    q[list(q.keys())[j]]=b[j]
-                print("Успішно оновлено")
-                return
-        print("Не знайдено")
-    except Exception as err:
-        print("Помилка при оновленні:",err)
-
-def read_record(c):
-    try:
-        f=[]
-        for r in DATABASE:
-            if r.get("1")==c or r.get("2")==c:
-                f.append(r)
-        if f:
-            print("Результат:",f)
-        else:
-            print("Не знайдено")
-    except Exception as err:
-        print("Помилка при читанні:",err)
-
-def delete_record(i):
-    try:
-        for j,r in enumerate(DATABASE):
-            if r.get("i")==int(i):
-                del DATABASE[j]
-                print("Успішно видалено")
-                return
-        print("Не знайдено")
-    except Exception as err:
-        print("Помилка при видаленні:",err)
-
+def search_entity_by_id(entity_name, entity_id):#id=0, first_name=test, second_name=test, email=test@test, password=1222
+    global DATABASE
+    for entity in DATABASE:
+        if str(entity.get('id')) == entity_id:
+            print(f"Знайдено {entity_name}: {entity}")
+            return
+    print(f"{entity_name} з id {entity_id} не знайдено")
+def search_entity_by_name(entity_name, entity_field, entity_value):
+    global DATABASE
+    found = False
+    for entity in DATABASE:
+        if entity.get(entity_field) == entity_value:
+            print(f"Знайдено {entity_name}: {entity}")
+            found = True
+    if not found:
+        print(f"{entity_name} з {entity_field} '{entity_value}' не знайдено")
 def main():
+    global DATABASE
     while True:
         print("\nМеню:")
-        print("1.Дія 1")
-        print("2.Дія 2")
-        print("3.Дія 3")
-        print("4.Дія 4")
-        print("5.Дія 5")
-        print("6.Вийти")
-        c=input("Виберіть дію")
-        if c=="1":
-            a=input("Введіть поля:")
-            b=input("Введіть дані:")
-            create_record(a.split(","),b.split(","))
-        elif c=="2":
-            a=input("Введіть поля:")
-            b=input("Введіть дані:")
-            create_user(a.split(","),b.split(","))
-        elif c=="3":
-            r=input("Введіть дані:")
-            update_record(r)
-        elif c=="4":
-            d=input("Введіть вміст:")
-            read_record(d)
-        elif c=="5":
-            i=input("Введіть id:")
-            delete_record(i)
-            break
+        print("1.Створити запис")
+        print("2.Створити користувача")
+        print("3.Пошук користувача за id")
+        print("4.Пошук користувача за електронною адресою")
+        print("5.Пошук запису за id")
+        print("6.Пошук запису за назвою")
+        choice = input("Виберіть дію: ")
+        if choice == "1":
+            entity = "Record"
+            record_str = input("Введіть дані для нового запису: ")
+            create_record(entity, record_str, RECORD_SCHEME)
+        elif choice == "2":
+            entity = "User"
+            record_str = input("Введіть дані для нового користувача: ")
+            create_record(entity, record_str, USER_SCHEME)
+        elif choice == "3":
+            entity_id = input("Введіть id користувача: ")
+            search_entity_by_id("Користувач", entity_id)
+        elif choice == "4":
+            email = input("Введіть електронну адресу користувача: ")
+            search_entity_by_name("Користувач", "email", email)
+        elif choice == "5":
+            entity_id = input("Введіть id запису: ")
+            search_entity_by_id("Запис", entity_id)
+        elif choice == "6":
+            title = input("Введіть назву запису: ")
+            search_entity_by_name("Запис", "title", title)
         else:
-            print("Невідома дія")
-
-main()
+            print("Невідома цифра")
+if __name__ == "__main__":
+    for user in users:
+        create_record("User", user, USER_SCHEME)
+    for record in records:
+        create_record("Record", record, RECORD_SCHEME)
+    main()
